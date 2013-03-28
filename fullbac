@@ -1,0 +1,31 @@
+#!/bin/bash
+# fullbac
+#
+# Backup the whole system with tar
+# Author: Zex
+
+
+destdir=$1
+errfile="badthing.fb"
+destfile=$destdir/`date +%b%d%Y`.tar.gz
+
+if [ -z $destdir ] ;then
+  echo "fullbac:back up to where"
+	exit 1 
+fi
+
+tar cvpzf $destfile --exclude=/media --exclude=/dev --exclude=/proc --exclude=/lost+found --exclude=/tmp --exclude=/mnt --exclude=/sys / 1>/dev/null | tee -a $errfile
+
+echo "fullbac:Backup done !"
+echo "fullbac:Testing backup..."
+
+tar tf $destfile 1>/dev/null 2>> $errfile
+
+#if [ -z $(stat -c%s $errfile) ] ;then
+if [ ! -s $errfile ] ;then
+	rm $errfile
+	echo "fullbac:Backup is fine !"
+	exit 0
+fi
+echo "fullbac:Something went wrong,check out $errfile for detail."
+exit 1
